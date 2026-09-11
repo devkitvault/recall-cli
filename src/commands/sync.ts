@@ -1,84 +1,131 @@
 import chalk from 'chalk'
 import { Command } from 'commander'
-import fs from 'fs'
 import ora from 'ora'
-import os from 'os'
-import path from 'path'
-import { ApiClient } from '../lib/api'
+import { ApiClient, ApiError } from '../lib/api'
 import { requireAuth } from '../lib/auth'
-
-const CACHE_DIR = path.join(os.homedir(), '.recall')
-const CACHE_FILE = path.join(CACHE_DIR, 'commands.json')
-
-function writeCache(commands: any[]): void {
-    fs.mkdirSync(CACHE_DIR, { recursive: true })
-    fs.writeFileSync(CACHE_FILE, JSON.stringify({
-        syncedAt: new Date().toISOString(),
-        commands,
-    }, null, 2))
-}
-
-function readCache(): { syncedAt: string; commands: any[] } | null {
-    try {
-        if (!fs.existsSync(CACHE_FILE)) return null
-        return JSON.parse(fs.readFileSync(CACHE_FILE, 'utf-8'))
-    } catch {
-        return null
-    }
-}
-
-export function getCachedCommands(): any[] {
-    const cache = readCache()
-    return cache?.commands ?? []
-}
+import {
+    attachCloudId,
+    localCommandsNeedingPush,
+    mergeCloudIntoLocal,
+    readVault,
+    VAULT_FILE,
+} from '../lib/local-vault'
 
 export const syncCommand = new Command('sync')
-    .description('Sync commands from server to local cache')
-    .option('-s, --status', 'Show last sync status without syncing')
+    .description('Sync local vault ↔ cloud (Pro/Team)')
+    .option('-s, --status', 'Show local vault + last sync status')
+    .option('--pull', 'Pull cloud → local only')
+    .option('--push', 'Push local-only commands → cloud only')
     .action(async (opts) => {
-        // Just show status
+        const vault = readVault()
+
         if (opts.status) {
-            const cache = readCache()
-            if (!cache) {
-                console.log(chalk.dim('\n  Never synced. Run: recall sync\n'))
-                return
-            }
-            const ago = Math.round(
-                (Date.now() - new Date(cache.syncedAt).getTime()) / 1000 / 60
-            )
             console.log()
-            console.log(`  Last synced: ${chalk.white(ago < 1 ? 'just now' : `${ago} minutes ago`)}`)
-            console.log(`  Commands:   ${chalk.white(cache.commands.length)} cached locally`)
-            console.log(`  Cache file: ${chalk.dim(CACHE_FILE)}`)
+            console.log(`  Local commands: ${chalk.white(vault.commands.length)}`)
+            console.log(`  Vault file:     ${chalk.dim(VAULT_FILE)}`)
+            if (!vault.syncedAt) {
+                console.log(chalk.dim('  Never synced to cloud.'))
+            } else {
+                const ago = Math.round(
+                    (Date.now() - new Date(vault.syncedAt).getTime()) / 1000 / 60,
+                )
+                console.log(`  Last synced:    ${chalk.white(ago < 1 ? 'just now' : `${ago} minutes ago`)}`)
+            }
+            const pending = localCommandsNeedingPush().length
+            if (pending) {
+                console.log(`  Not on cloud:   ${chalk.yellow(String(pending))} (recall sync --push)`)
+            }
             console.log()
             return
         }
 
+        const doPull = opts.pull || (!opts.pull && !opts.push)
+        const doPush = opts.push || (!opts.pull && !opts.push)
+
         const token = await requireAuth()
-        const spinner = ora('Syncing from server...').start()
+        const spinner = ora('Checking plan...').start()
 
         try {
-            const { commands } = await ApiClient.get('/commands', token)
+            const { user } = await ApiClient.get('/auth/me', token)
+            const plan = (user.plan ?? 'free') as string
+            spinner.stop()
+            if (plan !== 'pro' && plan !== 'team') {
+                console.log(chalk.yellow('\n  Cloud sync requires Pro or Team.'))
+                console.log(chalk.dim('  Local vault still works without sync.'))
+                console.log(chalk.dim('  Upgrade: recall upgrade\n'))
+                process.exit(1)
+            }
+        } catch (err) {
+            spinner.fail(chalk.red('Could not verify plan'))
+            if (err instanceof ApiError && err.status === 401) {
+                console.log(chalk.red('\n  Session expired. Run: recall auth login\n'))
+            }
+            process.exit(1)
+        }
 
-            writeCache(commands)
+        let pulled = 0
+        let pushed = 0
 
-            spinner.succeed(chalk.green(`Synced ${commands.length} command${commands.length === 1 ? '' : 's'}`))
+        if (doPull) {
+            const pullSpinner = ora('Pulling from cloud...').start()
+            try {
+                const { commands } = await ApiClient.get('/commands', token)
+                const { added, updated } = mergeCloudIntoLocal(commands)
+                pulled = added + updated
+                pullSpinner.succeed(
+                    chalk.green(
+                        `Pulled cloud vault (${added} new, ${updated} updated)`,
+                    ),
+                )
+            } catch (err) {
+                pullSpinner.fail(chalk.red('Pull failed'))
+                if (err instanceof ApiError && err.status === 403) {
+                    console.log(chalk.yellow('\n  Cloud vault requires Pro.\n'))
+                }
+                process.exit(1)
+            }
+        }
 
-            console.log()
-            console.log(`  ${chalk.dim('Cached to:')} ${chalk.dim(CACHE_FILE)}`)
-
-            if (commands.length) {
-                console.log()
-                console.log(chalk.dim('  Commands available offline:'))
-                for (const cmd of commands) {
-                    const name = cmd.name ? chalk.white(cmd.name) : chalk.dim('unnamed')
-                    console.log(`    · ${name}  ${chalk.dim(cmd.command.slice(0, 50))}`)
+        if (doPush) {
+            const pending = localCommandsNeedingPush()
+            if (!pending.length) {
+                console.log(chalk.dim('  Nothing new to push.'))
+            } else {
+                const pushSpinner = ora(`Pushing ${pending.length} local command(s)...`).start()
+                try {
+                    for (const cmd of pending) {
+                        const saved = await ApiClient.post(
+                            '/commands',
+                            {
+                                command: cmd.command,
+                                name: cmd.name,
+                                tags: cmd.tags,
+                            },
+                            token,
+                        )
+                        if (saved?.id) attachCloudId(cmd.id, saved.id)
+                        pushed++
+                    }
+                    pushSpinner.succeed(chalk.green(`Pushed ${pushed} command${pushed === 1 ? '' : 's'} to cloud`))
+                } catch (err) {
+                    pushSpinner.fail(chalk.red('Push failed'))
+                    if (err instanceof ApiError && err.status === 403) {
+                        console.log(chalk.yellow('\n  Cloud save requires Pro. Local vault is unchanged.\n'))
+                    }
+                    process.exit(1)
                 }
             }
-
-            console.log()
-        } catch {
-            spinner.fail(chalk.red('Sync failed'))
-            console.log(chalk.dim('\n  Make sure you are logged in and the API is reachable.\n'))
         }
+
+        console.log()
+        console.log(`  ${chalk.dim('Local vault:')} ${chalk.dim(VAULT_FILE)}`)
+        if (doPull || doPush) {
+            console.log(chalk.dim(`  pull≈${pulled} · push=${pushed}`))
+        }
+        console.log()
     })
+
+/** @deprecated kept for any imports — use readVault */
+export function getCachedCommands() {
+    return readVault().commands
+}

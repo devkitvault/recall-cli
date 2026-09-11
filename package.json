@@ -1,7 +1,7 @@
 {
   "name": "@devkitvault/recall",
-  "version": "1.2.8",
-  "description": "recall CLI — personal command vault for your terminal",
+  "version": "1.2.9",
+  "description": "recall CLI \u2014 personal command vault for your terminal (local-first)",
   "keywords": [
     "cli",
     "shell",

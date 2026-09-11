@@ -3,6 +3,7 @@ import { Command } from 'commander'
 import inquirer from 'inquirer'
 import { ApiClient, ApiError } from '../lib/api'
 import { requireAuth } from '../lib/auth'
+import { attachCloudId, saveLocalCommand } from '../lib/local-vault'
 import { track } from '../lib/events'
 import { detectProject } from '../lib/project'
 import { detectRuntime } from '../lib/runtime'
@@ -103,11 +104,21 @@ export async function saveSuggestion(
     risk: ResolveResponse['risk'],
     tags?: string[],
 ): Promise<void> {
-    await ApiClient.post('/commands', {
+    const local = saveLocalCommand({
         command,
         name: name?.trim() || undefined,
         tags,
-    }, token)
+    })
+    try {
+        const saved = await ApiClient.post('/commands', {
+            command,
+            name: name?.trim() || undefined,
+            tags,
+        }, token)
+        if (saved?.id) attachCloudId(local.id, saved.id)
+    } catch {
+        // Local save succeeded; cloud may require Pro
+    }
     await track('ai_accepted', { source, risk, saved: true })
     console.log(chalk.green(`\n  ${formatSavedMessage(name, tags)}\n`))
 }

@@ -12,13 +12,13 @@ const PLAN_LABELS: Record<string, string> = {
 
 const PLAN_FEATURES: Record<string, string[]> = {
     free: [
-        'Unlimited command saves',
-        'Search and filter',
-        'Export as JSON or shell script',
-        'Cross-machine sync',
+        'Fully local vault (no cloud)',
+        'Save, list, search, run offline',
+        'No Ask / no sync',
     ],
     pro: [
-        'Everything in Free',
+        'Sync local ↔ cloud',
+        'Ask (NL, print-only)',
         'Command groups',
         'Share commands via link',
     ],
@@ -26,7 +26,6 @@ const PLAN_FEATURES: Record<string, string[]> = {
         'Everything in Pro',
         'Org-level vaults',
         'Role-based access',
-        'SSO / SAML',
         'Audit log',
     ],
 }
@@ -60,8 +59,8 @@ export const whoamiCommand = new Command('whoami')
 
             if (plan === 'free') {
                 console.log()
-                console.log(chalk.dim('  Upgrade to Pro for groups and sharing:'))
-                console.log(chalk.dim('  https://devkitvault.com/recall/upgrade'))
+                console.log(chalk.dim('  Upgrade to Pro for sync + Ask:'))
+                console.log(chalk.dim('  https://recall.devkitvault.com/dashboard/upgrade'))
             }
 
             console.log()

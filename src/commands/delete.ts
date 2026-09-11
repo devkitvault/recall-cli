@@ -1,45 +1,30 @@
 import chalk from 'chalk'
 import { Command } from 'commander'
 import inquirer from 'inquirer'
-import ora from 'ora'
-import { ApiClient } from '../lib/api'
-import { requireAuth } from '../lib/auth'
+import { deleteLocalByName, findLocalByName } from '../lib/local-vault'
 
 export const deleteCommand = new Command('delete')
-    .description('Delete a saved command by name')
+    .description('Delete a command from your local vault')
     .argument('<name>', 'Command name to delete')
     .option('-f, --force', 'Skip confirmation prompt')
     .action(async (name: string, opts) => {
-        const token = await requireAuth()
-
-        // First look up the command to confirm it exists
-        const spinner = ora('Looking up...').start()
-
-        let cmd: any
-        try {
-            cmd = await ApiClient.get(
-                `/commands/by-name/${encodeURIComponent(name)}`,
-                token
-            )
-            spinner.stop()
-        } catch {
-            spinner.fail(chalk.red(`Command "${name}" not found`))
+        const cmd = findLocalByName(name)
+        if (!cmd) {
+            console.log(chalk.red(`\n  Command "${name}" not found in local vault.\n`))
             process.exit(1)
         }
 
-        // Show what will be deleted
         console.log()
         console.log(`  ${chalk.dim('Name:')}    ${chalk.white(cmd.name ?? '—')}`)
         console.log(`  ${chalk.dim('Command:')} ${chalk.white(cmd.command)}`)
         console.log()
 
-        // Confirm unless --force
         if (!opts.force) {
             const { confirm } = await inquirer.prompt([
                 {
                     type: 'confirm',
                     name: 'confirm',
-                    message: chalk.red(`Delete "${name}"?`),
+                    message: chalk.red(`Delete "${name}" from local vault?`),
                     default: false,
                 },
             ])
@@ -50,12 +35,7 @@ export const deleteCommand = new Command('delete')
             }
         }
 
-        const deleteSpinner = ora('Deleting...').start()
-
-        try {
-            await ApiClient.delete(`/commands/${cmd.id}`, token)
-            deleteSpinner.succeed(chalk.green(`Deleted "${name}"`))
-        } catch {
-            deleteSpinner.fail(chalk.red('Failed to delete'))
-        }
+        deleteLocalByName(name)
+        console.log(chalk.green(`  Deleted "${name}" from local vault.\n`))
+        console.log(chalk.dim('  Cloud copy (if any) is unchanged until you sync.\n'))
     })

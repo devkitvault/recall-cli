@@ -35,6 +35,8 @@ recall search docker
 recall run docker
 ```
 
+Commands live in `~/.recall/commands.json`.
+
 `recall save --last` (or `-L`) reads the last line from zsh / bash / PowerShell history. Not supported in Windows `cmd.exe`. On bash, if the command is missing: `history -a && recall save --last`.
 
 ```sh
@@ -42,7 +44,7 @@ recall playbook save deploy "docker compose up -d" "pnpm migrate"
 recall playbook run deploy --dry-run
 ```
 
-`recall playbook run` executes steps. Ask never does.
+Local playbooks follow the same idea when available; cloud playbooks need Pro. `recall playbook run` executes steps. Ask never does.
 
 ## Ask (Pro / Team)
 
@@ -62,19 +64,12 @@ Account + Pro/Team syncs your **local** commands to the cloud and unlocks Ask.
 
 ```sh
 recall auth login
-recall sync
+recall sync          # pull then push
+recall sync --pull   # cloud → local
+recall sync --push   # local-only → cloud
+recall sync --status
 recall whoami
 ```
-
-## Develop
-
-```sh
-npm install
-npm run build
-npm test
-node dist/index.js --help
-```
-
 ## Prefer a standalone binary?
 
 - **macOS / Linux:** `curl -fsSL https://devkitvault.com/recall/install.sh | sh`
