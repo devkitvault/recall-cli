@@ -4,7 +4,7 @@
 
 Product site and docs: [recall.devkitvault.com](https://recall.devkitvault.com)
 
-This repository is the **open CLI** published as [`@devkitvault/recall`](https://www.npmjs.com/package/@devkitvault/recall). The cloud API, billing, and dashboard stay private.
+This repository is the **open CLI** published as [`@devkitvault/recall`](https://www.npmjs.com/package/@devkitvault/recall). The cloud API, billing, and dashboard stay in a separate private repo.
 
 ## Requirements
 
