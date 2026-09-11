@@ -1,8 +1,19 @@
 # Public CLI extract
 
-The open-source CLI lives in `./recall-cli/` (gitignored here).
+Open-source face of `@devkitvault/recall`.
 
-- Source of truth for day-to-day development remains `packages/cli` + publish via `packages/npm-cli`.
-- When you are ready to go public: move `recall-cli` out of this monorepo (or push its nested git remote), create `devkitvault/recall-cli` on GitHub as **public**, then keep the two trees in sync (or switch publish to the public repo only).
+- **GitHub:** https://github.com/devkitvault/recall-cli
+- **Private product monorepo:** https://github.com/mahmoudhussiendev/recall (API, web, admin, billing — never public)
 
-Do not open the full monorepo. Keep `packages/api`, `admin`, billing, and secrets private.
+## Product flow (LOCKED)
+
+- Free / no account: local vault only — **no Ask**
+- Pro / Team: sync + Ask (print-only)
+
+## Sync from private monorepo
+
+1. Develop in `packages/cli`
+2. Publish from `packages/npm-cli` when shipping npm
+3. Mirror `packages/cli/src` here, commit, push to `devkitvault/recall-cli`
+
+See monorepo `AGENTS.md` and `.cursor/rules/open-core.mdc`.
