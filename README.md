@@ -4,7 +4,7 @@
 
 Product site and docs: [recall.devkitvault.com](https://recall.devkitvault.com)
 
-This repository is the **open CLI** published as [`@devkitvault/recall`](https://www.npmjs.com/package/@devkitvault/recall). The cloud API, billing, and dashboard stay in a separate private repo.
+Open source: [github.com/devkitvault/recall-cli](https://github.com/devkitvault/recall-cli)
 
 ## Requirements
 
@@ -25,7 +25,7 @@ recall doctor
 
 ## Quick start (local vault)
 
-Local save / list / search / run work without an account. Auth is only needed for sync, Ask, and team features on [recall.devkitvault.com](https://recall.devkitvault.com).
+Local save / list / search / run work **without an account**. Auth is only needed for **sync**, **Ask** (Pro/Team), and team features.
 
 ```sh
 recall save "docker compose up -d" --name docker --tags docker
@@ -44,7 +44,19 @@ recall playbook run deploy --dry-run
 
 `recall playbook run` executes steps. Ask never does.
 
-## Auth & sync (optional)
+## Ask (Pro / Team)
+
+Natural-language Ask prints a suggestion and never runs it. Requires a Pro or Team plan.
+
+```sh
+recall auth login
+recall "find the 10 biggest files in this directory"
+rec "that docker command from last week"
+```
+
+No-args `recall` opens an Ask session (`Recall >`). `/save [name]` stores the last suggestion. `/exit` leaves.
+
+## Auth & sync (Pro / Team)
 
 ```sh
 recall auth login
@@ -61,24 +73,38 @@ npm test
 node dist/index.js --help
 ```
 
-## Publish
+## Prefer a standalone binary?
 
-Bump `version` in `package.json` first if that version is already on npm. Then:
+- **macOS / Linux:** `curl -fsSL https://devkitvault.com/recall/install.sh | sh`
+- **Windows:** `irm https://devkitvault.com/recall/install.ps1 | iex`
+
+See [recall.devkitvault.com/docs/install](https://recall.devkitvault.com/docs/install).
+
+## Update
 
 ```sh
-npm publish
+npm update -g @devkitvault/recall
 ```
 
-Complete npm 2FA when prompted. Do not use `--ignore-scripts`.
+## Troubleshooting
+
+```sh
+recall doctor
+recall whoami
+```
+
+If something still fails, open an issue on [GitHub](https://github.com/devkitvault/recall-cli/issues) or visit [recall.devkitvault.com](https://recall.devkitvault.com).
 
 ## Links
 
-|         |                                                                                    |
-| ------- | ---------------------------------------------------------------------------------- |
-| Website | [recall.devkitvault.com](https://recall.devkitvault.com)                           |
-| Docs    | [recall.devkitvault.com/docs](https://recall.devkitvault.com/docs)                 |
-| npm     | [@devkitvault/recall](https://www.npmjs.com/package/@devkitvault/recall)           |
-| VS Code | [Marketplace](https://marketplace.visualstudio.com/items?itemName=devkitvault.recall-cmd) |
+|           |                                                                                           |
+| --------- | ----------------------------------------------------------------------------------------- |
+| Website   | [recall.devkitvault.com](https://recall.devkitvault.com)                                  |
+| Docs      | [recall.devkitvault.com/docs](https://recall.devkitvault.com/docs)                        |
+| Dashboard | [recall.devkitvault.com](https://recall.devkitvault.com)                                  |
+| Source    | [github.com/devkitvault/recall-cli](https://github.com/devkitvault/recall-cli)            |
+| VS Code   | [Marketplace](https://marketplace.visualstudio.com/items?itemName=devkitvault.recall-cmd) |
+| Issues    | [github.com/devkitvault/recall-cli](https://github.com/devkitvault/recall-cli/issues)     |
 
 ## License
 

@@ -11,12 +11,12 @@ const PLANS = {
         label: 'Free',
         price: '$0/month',
         features: [
-            '20 AI asks / month',
+            'Local vault (no account needed)',
+            '100 cloud command saves',
             '3 playbooks',
-            '100 command saves',
             'Search and filter',
             'Export as JSON or shell script',
-            'Cross-machine sync',
+            'No AI Ask (Pro)',
         ],
     },
     pro: {
@@ -24,6 +24,7 @@ const PLANS = {
         price: '$6/month',
         features: [
             '500 AI asks / month',
+            'Cross-machine sync',
             'Unlimited playbooks',
             'Unlimited commands',
             'Command groups',
