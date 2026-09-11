@@ -4,7 +4,7 @@ import path from 'path'
 
 const CONFIG_DIR = path.join(os.homedir(), '.recall')
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json')
-export const APP_VERSION = "2.7.0"
+export const APP_VERSION = '1.2.10'
 
 export const ENVIRONMENTS: Record<string, string> = {
     production: 'https://api.devkitvault.com',

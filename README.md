@@ -25,17 +25,18 @@ recall doctor
 
 ## Quick start (local vault)
 
-Free is **fully local** — save / list / search / run on your machine with **no account**. Cloud **sync** and **Ask** are Pro/Team.
+Local save / list / search / run work **without an account**. Auth is only needed for **sync**, **Ask** (Pro/Team), and team features.
 
 ```sh
 recall save "docker compose up -d" --name docker --tags docker
 recall save --last -n useful -t docker
+recall import history
 recall list
 recall search docker
 recall run docker
 ```
 
-Commands live in `~/.recall/commands.json`.
+`recall import history` reads your shell history file (zsh/bash/PowerShell), lets you pick commands, and saves them locally. It does **not** install a keylogger or live hook.
 
 `recall save --last` (or `-L`) reads the last line from zsh / bash / PowerShell history. Not supported in Windows `cmd.exe`. On bash, if the command is missing: `history -a && recall save --last`.
 

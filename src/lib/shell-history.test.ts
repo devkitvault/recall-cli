@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
     detectShellKind,
+    extractSaveableCommands,
     findLastSaveableCommand,
     isSelfSaveCommand,
     stripZshExtendedPrefix,
@@ -31,6 +32,43 @@ describe('stripZshExtendedPrefix', () => {
 
     it('leaves plain lines alone', () => {
         assert.equal(stripZshExtendedPrefix('ls -la'), 'ls -la')
+    })
+})
+
+describe('extractSaveableCommands', () => {
+    it('returns unique newest-first and skips recall/trivial', () => {
+        const lines = [
+            'cd ~',
+            'docker compose up -d',
+            'git status',
+            'ls',
+            'docker compose up -d',
+            'recall list',
+            'pnpm test',
+            'recall save --last',
+        ]
+        assert.deepEqual(extractSaveableCommands(lines, { limit: 10 }), [
+            'pnpm test',
+            'docker compose up -d',
+            'git status',
+        ])
+    })
+
+    it('respects limit', () => {
+        const lines = ['cmd-a', 'cmd-b', 'cmd-c', 'cmd-d']
+        assert.deepEqual(extractSaveableCommands(lines, { limit: 2 }), [
+            'cmd-d',
+            'cmd-c',
+        ])
+    })
+
+    it('parses zsh extended history', () => {
+        const lines = [
+            ': 1:0;echo one',
+            ': 2:0;echo two',
+            ': 3:0;rec save --last',
+        ]
+        assert.deepEqual(extractSaveableCommands(lines), ['echo two', 'echo one'])
     })
 })
 

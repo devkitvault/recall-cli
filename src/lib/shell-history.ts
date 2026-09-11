@@ -10,6 +10,116 @@ export function isSelfSaveCommand(line: string): boolean {
     return /^(recall|rec)\s+save(\s|$)/.test(t)
 }
 
+/** Skip trivial / meta lines when bulk-importing history. */
+export function isSkippedHistoryCommand(line: string): boolean {
+    const t = line.trim()
+    if (!t) return true
+    if (isSelfSaveCommand(t)) return true
+    if (/^(recall|rec)(\s|$)/.test(t)) return true
+    if (t.length < 2) return true
+    const first = t.split(/\s+/)[0]?.toLowerCase() ?? ''
+    const trivial = new Set([
+        'cd', 'ls', 'll', 'la', 'pwd', 'clear', 'cls', 'exit', 'logout',
+        'history', 'true', 'false', ':',
+    ])
+    if (trivial.has(first) && t.split(/\s+/).length <= 2) return true
+    return false
+}
+
+/** Normalize one history file line into a bare command, or null if not usable. */
+export function normalizeHistoryLine(rawLine: string): string | null {
+    let raw = rawLine.replace(/\r$/, '')
+    if (!raw.trim()) return null
+    if (/^#\d+$/.test(raw.trim())) return null
+    raw = stripZshExtendedPrefix(raw).trim()
+    if (!raw) return null
+    return raw
+}
+
+export interface ExtractHistoryOptions {
+    /** Max unique commands (newest first). Default unlimited. */
+    limit?: number
+    minLength?: number
+}
+
+/**
+ * Walk history lines (oldest → newest) and return unique saveable commands, newest first.
+ */
+export function extractSaveableCommands(
+    lines: string[],
+    opts: ExtractHistoryOptions = {},
+): string[] {
+    const minLength = opts.minLength ?? 3
+    const seen = new Set<string>()
+    const out: string[] = []
+
+    for (let i = lines.length - 1; i >= 0; i--) {
+        const cmd = normalizeHistoryLine(lines[i] ?? '')
+        if (!cmd) continue
+        if (cmd.length < minLength) continue
+        if (isSkippedHistoryCommand(cmd)) continue
+        if (seen.has(cmd)) continue
+        seen.add(cmd)
+        out.push(cmd)
+        if (opts.limit !== undefined && out.length >= opts.limit) break
+    }
+
+    return out
+}
+
+export function readHistoryCommands(
+    opts: ExtractHistoryOptions & {
+        env?: NodeJS.ProcessEnv
+        platform?: NodeJS.Platform
+        home?: string
+    } = {},
+): { commands: string[]; source: string; shell: ShellKind } {
+    const env = opts.env ?? process.env
+    const platform = opts.platform ?? process.platform
+    const home = opts.home ?? os.homedir()
+    const shell = detectShellKind(env, platform)
+
+    if (shell === 'cmd') {
+        throw new LastCommandError(
+            'import history is not supported in cmd.exe. Use PowerShell, Git Bash, or WSL.',
+            'unsupported',
+        )
+    }
+    if (shell === 'unknown') {
+        throw new LastCommandError(
+            'Could not detect your shell. Use zsh, bash, or PowerShell.',
+            'unsupported',
+        )
+    }
+
+    const files = historyFileCandidates(shell, env, home)
+    for (const file of files) {
+        try {
+            if (!fs.existsSync(file)) continue
+            const text = fs.readFileSync(file, 'utf8')
+            const commands = extractSaveableCommands(text.split('\n'), {
+                limit: opts.limit,
+                minLength: opts.minLength,
+            })
+            if (commands.length) {
+                return { commands, source: file, shell }
+            }
+        } catch {
+            // try next
+        }
+    }
+
+    const tip =
+        shell === 'bash'
+            ? ' If history looks empty, try: history -a && recall import history'
+            : ''
+    throw new LastCommandError(
+        `No importable commands found in shell history.${tip}`,
+        'not_found',
+    )
+}
+
+
 /** Strip zsh extended-history prefix `: <unix>:<duration>;`. */
 export function stripZshExtendedPrefix(line: string): string {
     const m = line.match(/^:\s*\d+:\d+;(.*)$/)
