@@ -25,7 +25,7 @@ recall doctor
 
 ## Quick start (local vault)
 
-Local save / list / search / run work **without an account**. Auth is only needed for **sync**, **Ask** (Pro/Team), and team features.
+Free is **fully local** — save / list / search / run on your machine with **no account**. Cloud **sync** and **Ask** are Pro/Team.
 
 ```sh
 recall save "docker compose up -d" --name docker --tags docker
@@ -57,6 +57,8 @@ rec "that docker command from last week"
 No-args `recall` opens an Ask session (`Recall >`). `/save [name]` stores the last suggestion. `/exit` leaves.
 
 ## Auth & sync (Pro / Team)
+
+Account + Pro/Team syncs your **local** commands to the cloud and unlocks Ask.
 
 ```sh
 recall auth login
