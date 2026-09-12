@@ -1,19 +1,22 @@
-# Public CLI extract
+# Open-core (public CLI)
 
-Open-source face of `@devkitvault/recall`.
-
-- **GitHub:** https://github.com/devkitvault/recall-cli
-- **Private product monorepo:** https://github.com/mahmoudhussiendev/recall (API, web, admin, billing — never public)
+This repo is the open-source face of `@devkitvault/recall`.
 
 ## Product flow (LOCKED)
 
-- Free / no account: local vault only — **no Ask**
-- Pro / Team: sync + Ask (print-only)
+| Tier | Account | Vault | Sync | Ask |
+|---|---|---|---|---|
+| Free | not required | local only (`~/.recall/`) | no | no |
+| Pro / Team | required | cloud + local | yes | yes (print-only) |
 
-## Sync from private monorepo
+Ask never executes. `recall run` / playbooks run only when you invoke them.
 
-1. Develop in `packages/cli` (local vault: `src/lib/local-vault.ts`; Pro sync: `src/commands/sync.ts`)
-2. Publish from `packages/npm-cli` when shipping npm
-3. Mirror `packages/cli/src` here, commit, push to `devkitvault/recall-cli`
+## npm
 
-Free = fully local (`~/.recall/commands.json`). Pro = `recall sync` + Ask.
+Published as `@devkitvault/recall` from the product monorepo’s npm package. Keep `APP_VERSION` aligned when shipping.
+
+## Day-to-day
+
+1. Develop CLI features in the product monorepo (`packages/cli`)
+2. Publish npm when ready
+3. Mirror `src/` here and push to `devkitvault/recall-cli`

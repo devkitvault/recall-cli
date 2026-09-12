@@ -1,10 +1,13 @@
 # @devkitvault/recall
 
-**recall** is a CLI command vault for your terminal. Save the commands you keep losing, search them, run them by name, and sync when you want cloud backup.
+I kept losing useful shell commands. So I built a small vault for the ones I actually reuse.
 
-Product site and docs: [recall.devkitvault.com](https://recall.devkitvault.com)
+**recall** saves commands locally, lets you search and run them by name, and optionally syncs when you want the same vault on another machine.
 
-Open source: [github.com/devkitvault/recall-cli](https://github.com/devkitvault/recall-cli)
+- **Free:** local vault only — no account, nothing uploads (`~/.recall/commands.json`)
+- **Pro / Team:** `recall sync` + Ask (prints a suggestion; never runs it)
+
+Product: [recall.devkitvault.com](https://recall.devkitvault.com) · Docs: [docs](https://recall.devkitvault.com/docs)
 
 ## Requirements
 
@@ -23,33 +26,31 @@ recall --version
 recall doctor
 ```
 
-## Quick start (local vault)
+## Quick start (Free — local)
 
-Local save / list / search / run work **without an account**. Auth is only needed for **sync**, **Ask** (Pro/Team), and team features.
+No account needed.
 
 ```sh
-recall save "docker compose up -d" --name docker --tags docker
+recall save "docker compose up -d" -n up -t docker
 recall save --last -n useful -t docker
-recall import history
+recall import history -n 20
 recall list
 recall search docker
-recall run docker
+recall run up
 ```
 
-`recall import history` reads your shell history file (zsh/bash/PowerShell), lets you pick commands, and saves them locally. It does **not** install a keylogger or live hook.
+`recall import history` reads your shell history file (zsh / bash / PowerShell) and lets you pick what to keep. It does not sit in the background recording keystrokes.
 
-`recall save --last` (or `-L`) reads the last line from zsh / bash / PowerShell history. Not supported in Windows `cmd.exe`. On bash, if the command is missing: `history -a && recall save --last`.
+`recall save --last` (or `-L`) takes the last history line. Not supported in Windows `cmd.exe`. On bash, if it’s empty: `history -a && recall save --last`.
 
 ```sh
 recall playbook save deploy "docker compose up -d" "pnpm migrate"
 recall playbook run deploy --dry-run
 ```
 
-Local playbooks follow the same idea when available; cloud playbooks need Pro. `recall playbook run` executes steps. Ask never does.
+`recall playbook run` executes steps. Ask never does.
 
 ## Ask (Pro / Team)
-
-Natural-language Ask prints a suggestion and never runs it. Requires a Pro or Team plan.
 
 ```sh
 recall auth login
@@ -57,11 +58,11 @@ recall "find the 10 biggest files in this directory"
 rec "that docker command from last week"
 ```
 
+Ask only prints. You run the command yourself.
+
 No-args `recall` opens an Ask session (`Recall >`). `/save [name]` stores the last suggestion. `/exit` leaves.
 
-## Auth & sync (Pro / Team)
-
-Account + Pro/Team syncs your **local** commands to the cloud and unlocks Ask.
+## Sync (Pro / Team)
 
 ```sh
 recall auth login
@@ -71,12 +72,13 @@ recall sync --push   # local-only → cloud
 recall sync --status
 recall whoami
 ```
-## Prefer a standalone binary?
+
+## Native binary (optional)
 
 - **macOS / Linux:** `curl -fsSL https://devkitvault.com/recall/install.sh | sh`
 - **Windows:** `irm https://devkitvault.com/recall/install.ps1 | iex`
 
-See [recall.devkitvault.com/docs/install](https://recall.devkitvault.com/docs/install).
+See [install docs](https://recall.devkitvault.com/docs/install).
 
 ## Update
 
@@ -91,18 +93,17 @@ recall doctor
 recall whoami
 ```
 
-If something still fails, open an issue on [GitHub](https://github.com/devkitvault/recall-cli/issues) or visit [recall.devkitvault.com](https://recall.devkitvault.com).
+Issues: [github.com/devkitvault/recall-cli/issues](https://github.com/devkitvault/recall-cli/issues)
 
 ## Links
 
-|           |                                                                                           |
+| | |
 | --------- | ----------------------------------------------------------------------------------------- |
-| Website   | [recall.devkitvault.com](https://recall.devkitvault.com)                                  |
-| Docs      | [recall.devkitvault.com/docs](https://recall.devkitvault.com/docs)                        |
-| Dashboard | [recall.devkitvault.com](https://recall.devkitvault.com)                                  |
-| Source    | [github.com/devkitvault/recall-cli](https://github.com/devkitvault/recall-cli)            |
-| VS Code   | [Marketplace](https://marketplace.visualstudio.com/items?itemName=devkitvault.recall-cmd) |
-| Issues    | [github.com/devkitvault/recall-cli](https://github.com/devkitvault/recall-cli/issues)     |
+| Website | [recall.devkitvault.com](https://recall.devkitvault.com) |
+| Docs | [recall.devkitvault.com/docs](https://recall.devkitvault.com/docs) |
+| Source | [github.com/devkitvault/recall-cli](https://github.com/devkitvault/recall-cli) |
+| npm | [@devkitvault/recall](https://www.npmjs.com/package/@devkitvault/recall) |
+| VS Code | [Marketplace](https://marketplace.visualstudio.com/items?itemName=devkitvault.recall-cmd) |
 
 ## License
 
