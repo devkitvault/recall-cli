@@ -93,7 +93,7 @@ recall doctor
 recall whoami
 ```
 
-Issues: [github.com/devkitvault/recall-cli/issues](https://github.com/devkitvault/recall-cli/issues)
+Issues: [github.com/devkitvaultorg/recall-cli/issues](https://github.com/devkitvaultorg/recall-cli/issues)
 
 ## Links
 
@@ -101,7 +101,7 @@ Issues: [github.com/devkitvault/recall-cli/issues](https://github.com/devkitvaul
 | --------- | ----------------------------------------------------------------------------------------- |
 | Website | [recall.devkitvault.com](https://recall.devkitvault.com) |
 | Docs | [recall.devkitvault.com/docs](https://recall.devkitvault.com/docs) |
-| Source | [github.com/devkitvault/recall-cli](https://github.com/devkitvault/recall-cli) |
+| Source | [github.com/devkitvaultorg/recall-cli](https://github.com/devkitvaultorg/recall-cli) |
 | npm | [@devkitvault/recall](https://www.npmjs.com/package/@devkitvault/recall) |
 | VS Code | [Marketplace](https://marketplace.visualstudio.com/items?itemName=devkitvault.recall-cmd) |
 

@@ -19,4 +19,4 @@ Published as `@devkitvault/recall` from the product monorepo’s npm package. Ke
 
 1. Develop CLI features in the product monorepo (`packages/cli`)
 2. Publish npm when ready
-3. Mirror `src/` here and push to `devkitvault/recall-cli`
+3. Mirror `src/` here and push to `devkitvaultorg/recall-cli`

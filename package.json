@@ -19,11 +19,11 @@
   "license": "MIT",
   "homepage": "https://recall.devkitvault.com",
   "bugs": {
-    "url": "https://github.com/devkitvault/recall-cli/issues"
+    "url": "https://github.com/devkitvaultorg/recall-cli/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/devkitvault/recall-cli.git"
+    "url": "git+https://github.com/devkitvaultorg/recall-cli.git"
   },
   "bin": {
     "recall": "dist/index.js",
